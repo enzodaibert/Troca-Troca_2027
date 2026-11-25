@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Buddies - Escola Eleva</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Arquivo CSS separado -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Cabeçalho -->
+    <header class="bg-indigo-700 text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <span class="text-xs uppercase tracking-wider bg-indigo-500 px-2.5 py-1 rounded-full font-semibold">Escola Eleva</span>
+                <h1 class="text-3xl font-bold mt-2">Book Buddies</h1>
+                <p class="text-indigo-200 text-sm mt-1">Acervo e orientação de leitura literária</p>
+            </div>
+            <div class="mt-4 md:mt-0 text-right text-xs text-indigo-200 hidden sm:block">
+                <p>📖 Cada família adquire 2 títulos</p>
+                <p>(1 em português e 1 em inglês)</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Conteúdo Principal -->
+    <main class="max-w-4xl mx-auto px-4 py-8 flex-grow w-full">
+        
+        <!-- Caixa de Busca -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8">
+            <label for="searchBox" class="block text-sm font-semibold text-slate-700 mb-2">Pesquisar Livro (Título, Autor ou ISBN):</label>
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">🔍</span>
+                <input type="text" id="searchBox" placeholder="Ex: A árvore magnífica, Nick Bland, 9788574124513..." 
+                    class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-sm">
+            </div>
+            <p class="text-xs text-slate-500 mt-2">💡 Dica: Digite parte do nome do livro, nome do autor ou o código ISBN.</p>
+        </div>
+
+        <!-- Área de Resultados -->
+        <div id="resultContainer" class="space-y-4">
+            <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
+                <div class="text-4xl mb-3">📚</div>
+                <h3 class="text-lg font-medium text-slate-700">Comece a digitar acima para buscar um livro</h3>
+                <p class="text-sm text-slate-400 mt-1">O sistema cruzará os dados entre todos os segmentos cadastrados.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Rodapé -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+        <p>Escola Eleva • Programa Book Buddies</p>
+    </footer>
+
+    <!-- Importando os arquivos JavaScript de dados -->
+    <script src="infantil.js"></script>
+    <script src="fund1.js"></script>
+    <script src="fund2.js"></script>
+    <script src="medio.js"></script>
+
+    <!-- Lógica unificada de busca -->
+    <script>
+        const livrosDB = [...(typeof infantilDB !== 'undefined' ? infantilDB : []), 
+                          ...(typeof fund1DB !== 'undefined' ? fund1DB : []), 
+                          ...(typeof fund2DB !== 'undefined' ? fund2DB : []), 
+                          ...(typeof medioDB !== 'undefined' ? medioDB : [])];
+
+        const searchBox = document.getElementById('searchBox');
+        const resultContainer = document.getElementById('resultContainer');
+
+        searchBox.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+
+            if (query === '') {
+                resultContainer.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-300">
+                        <div class="text-4xl mb-3">📚</div>
+                        <h3 class="text-lg font-medium text-slate-700">Comece a digitar acima para buscar um livro</h3>
+                        <p class="text-sm text-slate-400 mt-1">O sistema cruzará os dados entre todos os segmentos cadastrados.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const resultados = livrosDB.filter(livro => 
+                livro.titulo.toLowerCase().includes(query) || 
+                livro.autor.toLowerCase().includes(query) || 
+                livro.isbn.includes(query)
+            );
+
+            if (resultados.length > 0) {
+                let html = `<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Foram encontrados ${resultados.length} resultado(s):</p>`;
+                
+                resultados.forEach(livro => {
+                    html += `
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-200 bg-emerald-50/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition hover:shadow-md">
+                            <div>
+                                <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full mb-1">
+                                    ✔ Livro Encontrado na Lista Oficial
+                                </span>
+                                <h4 class="text-lg font-bold text-slate-900">${livro.titulo}</h4>
+                                <p class="text-sm text-slate-600 mt-0.5"><strong>Autor(es):</strong> ${livro.autor}</p>
+                                <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500 mt-2">
+                                    <span>🏢 <strong>Editora:</strong> ${livro.editora}</span>
+                                    <span>🔖 <strong>ISBN-13:</strong> ${livro.isbn}</span>
+                                </div>
+                            </div>
+                            <div class="bg-indigo-50 text-indigo-700 font-medium px-4 py-2 rounded-xl text-xs text-center min-w-[170px] border border-indigo-100 self-stretch md:self-auto flex items-center justify-center">
+                                🎒 ${livro.serie}
+                            </div>
+                        </div>
+                    `;
+                });
+                resultContainer.innerHTML = html;
+            } else {
+                resultContainer.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-rose-200 text-center">
+                        <div class="text-3xl mb-2">❌</div>
+                        <h4 class="text-lg font-bold text-slate-800">Livro não encontrado na lista oficial</h4>
+                        <p class="text-sm text-slate-500 mt-1">O termo pesquisado não consta nos registros oficiais do Book Buddies.</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
